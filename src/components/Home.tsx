@@ -20,136 +20,9 @@ interface Motorbike {
   description: string;
 }
 
-const motorbikes: Motorbike[] = [
-  {
-    id: 1,
-    name: 'Iron 883',
-    manufacturer: 'Harley-Davidson',
-    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80',
-    price: 75,
-    location: 'Brooklyn, NY',
-    rating: 4.8,
-    reviews: 124,
-    owner: 'John D.',
-    category: 'Sport',
-    engineCapacity: '883cc',
-    power: '50 HP',
-    weight: '564 lbs',
-    fuelCapacity: '3.3 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1558981285-6f0c94958bb6?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1558980394-4c7c9299fe96?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'Classic American cruiser with a powerful V-twin engine. Perfect for city rides and weekend cruising.'
-  },
-  {
-    id: 2,
-    name: 'Panigale V4',
-    manufacturer: 'Ducati',
-    image: 'https://cdn.bikedekho.com/processedimages/ducati/panigale-v4/source/panigale-v46756c46e25a7a.jpg',
-    price: 90,
-    location: 'Manhattan, NY',
-    rating: 4.9,
-    reviews: 89,
-    owner: 'Mike R.',
-    category: 'Sport',
-    engineCapacity: '1103cc',
-    power: '214 HP',
-    weight: '381 lbs',
-    fuelCapacity: '4.23 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80',
-      'https://images.pexels.com/photos/15083099/pexels-photo-15083099.jpeg?cs=srgb&dl=pexels-stephanlouis-15083099.jpg&fm=jpg'
-    ],
-    description: 'The ultimate sports bike with cutting-edge technology and unmatched performance.'
-  },
-  {
-    id: 3,
-    name: 'PCX 150',
-    manufacturer: 'Honda',
-    image: 'https://thai.webike.net/news/wp-content/uploads/2016/04/1111.jpg',
-    price: 45,
-    location: 'Queens, NY',
-    rating: 4.7,
-    reviews: 156,
-    owner: 'Sarah L.',
-    category: 'Scooter',
-    engineCapacity: '149cc',
-    power: '13 HP',
-    weight: '289 lbs',
-    fuelCapacity: '2.1 gallons',
-    additionalImages: [
-      'https://cdn.ennxo.com/uploads/products/640/1d59b0fa3c4344b898cfa0a457f3885a.jpg',
-      'https://f.ptcdn.info/562/056/000/p5gbv4gdrWrdAqASOod-o.jpg'
-    ],
-    description: 'Efficient and stylish urban commuter with excellent fuel economy and smooth handling.'
-  },
-  {
-    id: 4,
-    name: 'MT-09',
-    manufacturer: 'Yamaha',
-    image: 'https://www.motorcyclenews.com/wp-images/283629/2024_yamaha_mt-09_y-amt_030.jpg',
-    price: 80,
-    location: 'Manhattan, NY',
-    rating: 4.8,
-    reviews: 92,
-    owner: 'Alex K.',
-    category: 'Naked',
-    engineCapacity: '890cc',
-    power: '117 HP',
-    weight: '417 lbs',
-    fuelCapacity: '3.7 gallons',
-    additionalImages: [
-      'https://www.bahtsold.com/user_images/2023/11-04/509101/img_149574_1699067823_69509.jpg',
-      'https://cdn.dealerspike.com/imglib/v1/800x600/imglib/Assets/Inventory/70/95/70956EDA-45FE-4700-96AF-B2172FDD65AF.jpg'
-    ],
-    description: 'Aggressive naked bike with thrilling performance and advanced electronics package.'
-  },
-  {
-    id: 5,
-    name: 'K1600GT',
-    manufacturer: 'BMW',
-    image: 'https://mcn-images.bauersecure.com/wp-images/4477/1440x960/bmw_k1600gt_01.jpg?mode=max&quality=90&scale=down',
-    price: 150,
-    location: 'Brooklyn, NY',
-    rating: 4.9,
-    reviews: 78,
-    owner: 'Tom H.',
-    category: 'Touring',
-    engineCapacity: '1649cc',
-    power: '160 HP',
-    weight: '788 lbs',
-    fuelCapacity: '7.0 gallons',
-    additionalImages: [
-      'https://bikereview.com.au/wp-content/uploads/2022/11/BikeReview-2022-BMW-K-1600-36.jpg',
-      'https://amcn.com.au/wp-content/uploads/2023/03/MW-20230119-BMW-K1600GT-7391-e1679530988727.jpg'
-    ],
-    description: 'Luxury touring motorcycle with supreme comfort and advanced features for long-distance travel.'
-  },
-  {
-    id: 6,
-    name: 'R1250GS',
-    manufacturer: 'BMW',
-    image: 'https://www.bmwmotorcyclesoftemecula.com/wp-content/uploads/2020/07/R1250gs.jpg',
-    price: 120,
-    location: 'Queens, NY',
-    rating: 4.9,
-    reviews: 103,
-    owner: 'David M.',
-    category: 'Adventure',
-    engineCapacity: '1254cc',
-    power: '136 HP',
-    weight: '549 lbs',
-    fuelCapacity: '5.3 gallons',
-    additionalImages: [
-      'https://rustsports.com/wp-content/uploads/2020/03/P90322916_highRes_bmw-r-1250-gs-hp-09--scaled.jpg',
-      'https://www.bmwmotorcyclesoftemecula.com/wp-content/uploads/2020/07/R1250gs.jpg'
-    ],
-    description: 'The ultimate adventure motorcycle, capable of conquering any terrain while providing exceptional comfort.'
-  }
-];
-
 function Home() {
+  
+  const [motorbikes, setMotorbikes] = useState<Motorbike[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBike, setSelectedBike] = useState<Motorbike | null>(null);
@@ -165,13 +38,22 @@ function Home() {
 
   // Automatically calculate the end date when start date or rental days change
   useEffect(() => {
-    if (startDate && rentalDays > 0) {
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + rentalDays); // Add rental days to the start date
-      setEndDate(end.toISOString().split('T')[0]); // Format as YYYY-MM-DD
-    }
-  }, [startDate, rentalDays]);
+    const fetchListedBikes = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/bikes/listed', {
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to fetch listed bikes');
+        const data = await response.json();
+        console.log('Fetched bikes:', data); // Debug log
+        setMotorbikes(data);
+      } catch (error) {
+        console.error('Error fetching listed bikes:', error);
+      }
+    };
+
+    fetchListedBikes();
+  }, []);
 
   const filteredMotorbikes = motorbikes.filter(motorbike => {
     const matchesSearch = motorbike.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) ||

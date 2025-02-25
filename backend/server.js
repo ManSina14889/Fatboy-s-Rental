@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const session = require('express-session'); // Add this line
 const authRoutes = require('./routes/auth.js'); // Login and Sign-Up routes
+const bikeRoutes = require('./routes/bikes.js'); // Import bike routes
 const db = require('./db'); // Ensure database connection (if db.js exists)
 
 dotenv.config({ path: './backend/.env' });
@@ -27,6 +29,27 @@ app.use(
 app.use(express.json());
 app.use(morgan('dev')); // Logs API requests
 
+// Add session middleware configuration
+// Session middleware should be before route handlers
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Set to false for development (HTTP)
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+// Add session check route
+app.get('/auth/check-session', (req, res) => {
+  res.json({
+    isLoggedIn: !!req.session.userId,
+    isStaff: !!req.session.isStaff
+  });
+});
+
 // Database connection check
 db.query('SELECT 1')
   .then(() => console.log("✅ Database connected"))
@@ -42,7 +65,13 @@ app.use((req, res, next) => {
 });
 
 // Mount routes
-app.use('/auth', authRoutes);
+app.use('/auth', authRoutes);  // Remove /api prefix
+app.use('/bikes', bikeRoutes); // Remove /api prefix
+
+// Update debug logs to match actual routes
+console.log("Registered routes:");
+console.log("/auth - Authentication routes");
+console.log("/bikes - Bike routes");
 
 // 404 Handler - If no route matches
 app.use((req, res) => {

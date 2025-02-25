@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Bike, User, Calendar, MapPin, Clock, DollarSign, Phone, Mail, Shield, Star, Search } from 'lucide-react';
 
 // Import the Motorbike interface and motorbikes array from Home.tsx
@@ -21,134 +21,8 @@ interface Motorbike {
   description: string;
 }
 
-const motorbikes: Motorbike[] = [
-  {
-    id: 1,
-    name: 'Iron 883',
-    manufacturer: 'Harley-Davidson',
-    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80',
-    price: 75,
-    location: 'Brooklyn, NY',
-    rating: 4.8,
-    reviews: 124,
-    owner: 'John D.',
-    category: 'Sport',
-    engineCapacity: '883cc',
-    power: '50 HP',
-    weight: '564 lbs',
-    fuelCapacity: '3.3 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1558981285-6f0c94958bb6?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1558980394-4c7c9299fe96?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'Classic American cruiser with a powerful V-twin engine. Perfect for city rides and weekend cruising.'
-  },
-  {
-    id: 2,
-    name: 'Panigale V4',
-    manufacturer: 'Ducati',
-    image: 'https://cdn.bikedekho.com/processedimages/ducati/panigale-v4/source/panigale-v46756c46e25a7a.jpg',
-    price: 90,
-    location: 'Manhattan, NY',
-    rating: 4.9,
-    reviews: 89,
-    owner: 'Mike R.',
-    category: 'Sport',
-    engineCapacity: '1103cc',
-    power: '214 HP',
-    weight: '381 lbs',
-    fuelCapacity: '4.23 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'The ultimate sports bike with cutting-edge technology and unmatched performance.'
-  },
-  {
-    id: 3,
-    name: 'PCX 150',
-    manufacturer: 'Honda',
-    image: 'https://thai.webike.net/news/wp-content/uploads/2016/04/1111.jpg',
-    price: 45,
-    location: 'Queens, NY',
-    rating: 4.7,
-    reviews: 156,
-    owner: 'Sarah L.',
-    category: 'Scooter',
-    engineCapacity: '149cc',
-    power: '13 HP',
-    weight: '289 lbs',
-    fuelCapacity: '2.1 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1571325654970-60aa4a1e10ac?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1572102882182-82320c87a092?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'Efficient and stylish urban commuter with excellent fuel economy and smooth handling.'
-  },
-  {
-    id: 4,
-    name: 'MT-09',
-    manufacturer: 'Yamaha',
-    image: 'https://www.motorcyclenews.com/wp-images/283629/2024_yamaha_mt-09_y-amt_030.jpg',
-    price: 80,
-    location: 'Manhattan, NY',
-    rating: 4.8,
-    reviews: 92,
-    owner: 'Alex K.',
-    category: 'Naked',
-    engineCapacity: '890cc',
-    power: '117 HP',
-    weight: '417 lbs',
-    fuelCapacity: '3.7 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1635073943212-f5f4786a7288?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1635073943212-f5f4786a7288?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'Aggressive naked bike with thrilling performance and advanced electronics package.'
-  },
-  {
-    id: 5,
-    name: 'K1600GT',
-    manufacturer: 'BMW',
-    image: 'https://mcn-images.bauersecure.com/wp-images/4477/1440x960/bmw_k1600gt_01.jpg?mode=max&quality=90&scale=down',
-    price: 150,
-    location: 'Brooklyn, NY',
-    rating: 4.9,
-    reviews: 78,
-    owner: 'Tom H.',
-    category: 'Touring',
-    engineCapacity: '1649cc',
-    power: '160 HP',
-    weight: '788 lbs',
-    fuelCapacity: '7.0 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1558980394-4c7c9299fe96?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'Luxury touring motorcycle with supreme comfort and advanced features for long-distance travel.'
-  },
-  {
-    id: 6,
-    name: 'R1250GS',
-    manufacturer: 'BMW',
-    image: 'https://www.bmwmotorcyclesoftemecula.com/wp-content/uploads/2020/07/R1250gs.jpg',
-    price: 120,
-    location: 'Queens, NY',
-    rating: 4.9,
-    reviews: 103,
-    owner: 'David M.',
-    category: 'Adventure',
-    engineCapacity: '1254cc',
-    power: '136 HP',
-    weight: '549 lbs',
-    fuelCapacity: '5.3 gallons',
-    additionalImages: [
-      'https://images.unsplash.com/photo-1589318765667-8da49b2b6e23?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1589318765667-8da49b2b6e23?auto=format&fit=crop&w=800&q=80'
-    ],
-    description: 'The ultimate adventure motorcycle, capable of conquering any terrain while providing exceptional comfort.'
-  }
-];
+
+  
 
 interface BikeRequest {
   id: number;
@@ -238,108 +112,6 @@ interface ActiveRental {
   contract: RentalContract;
 }
 
-const bikeRequests: BikeRequest[] = [
-  {
-    id: 1,
-    name: 'Street Triple RS',
-    manufacturer: 'Triumph',
-    image: 'https://cdn.motor1.com/images/mgl/bgYW16/s3/2023-triumph-street-triple-rs---side-right.jpg',
-    owner: {
-      name: 'Michael Johnson',
-      email: 'michael.j@example.com'
-    },
-    category: 'Naked',
-    engineCapacity: '765cc',
-    location: 'Manhattan, NY',
-    requestDate: '2024-03-15',
-    price: 85
-  },
-  {
-    id: 2,
-    name: 'Monster 1200',
-    manufacturer: 'Ducati',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Ducati_Monster_1200s.jpg',
-    owner: {
-      name: 'Emily Wilson',
-      email: 'emily.w@example.com'
-    },
-    category: 'Naked',
-    engineCapacity: '1198cc',
-    location: 'Brooklyn, NY',
-    requestDate: '2024-03-14',
-    price: 95
-  }
-];
-
-const listedBikes = motorbikes; // Use the motorbikes array from Home.tsx
-
-const activeRentals: ActiveRental[] = [
-  {
-    id: 'rent1',
-    bike: {
-      id: 7,
-      name: 'Ninja 1000SX',
-      manufacturer: 'Kawasaki',
-      image: 'https://boymeetsbike.com/wp-content/uploads/2021/06/img_4507.jpg',
-      category: 'Sport',
-      engineCapacity: '1043cc',
-      location: 'Brooklyn, NY',
-      price: 110
-    },
-    owner: {
-      id: 'own2',
-      name: 'Jane Doe',
-      email: 'jane.d@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '456 Elm St, Brooklyn, NY',
-      joinDate: '2023-02-15',
-      totalBikes: 2,
-      rating: 4.8,
-      verificationStatus: 'Verified',
-      idNumber: 'ID987654321',
-      bankDetails: {
-        accountName: 'Jane Doe',
-        accountNumber: '****1234',
-        bankName: 'Bank of America'
-      }
-    },
-    renter: {
-      id: 'rent2',
-      name: 'Michael Smith',
-      email: 'michael.s@example.com',
-      phone: '+1 (555) 987-6543',
-      address: '789 Oak St, Manhattan, NY',
-      licenseNumber: 'L123456789',
-      licenseExpiry: '2025-12-31',
-      emergencyContact: {
-        name: 'Sarah Smith',
-        phone: '+1 (555) 246-8135',
-        relationship: 'Spouse'
-      },
-      rentalHistory: {
-        total: 10,
-        completed: 9,
-        cancelled: 1
-      },
-      rating: 4.7,
-      verificationStatus: 'Verified'
-    },
-    contract: {
-      id: 'con2',
-      startDate: '2024-03-10',
-      endDate: '2024-03-17',
-      totalAmount: 770,
-      status: 'Active',
-      paymentStatus: 'Paid',
-      deposit: 200,
-      insurance: {
-        provider: 'SafeRide Insurance',
-        policyNumber: 'POL654321',
-        coverage: 'Comprehensive'
-      }
-    }
-  }
-];
 
 function StaffDashboard() {
   const [showRequests, setShowRequests] = useState(false);
@@ -349,16 +121,67 @@ function StaffDashboard() {
   const [selectedOwner, setSelectedOwner] = useState<BikeOwner | null>(null);
   const [selectedRenter, setSelectedRenter] = useState<Renter | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [bikeRequests, setBikeRequests] = useState<BikeRequest[]>([]);
+  // Add these new states
+  const [listedBikes, setListedBikes] = useState<Motorbike[]>([]);
+  const [activeRentals, setActiveRentals] = useState<ActiveRental[]>([]);
 
-  const handleAccept = (request: BikeRequest) => {
-    console.log('Accepted request:', request);
-    setSelectedRequest(null);
-  };
+  // Keep your existing useEffect for pending requests
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/bikes/pending-requests', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch pending requests');
+        }
+        const data = await response.json();
+        console.log('Fetched requests:', data); // Add this debug log
+        setBikeRequests(data);
+      } catch (error) {
+        console.error('Error fetching pending requests:', error);
+      }
+    };
+  
+    fetchPendingRequests();
+  }, []);
 
-  const handleDeny = (request: BikeRequest) => {
-    console.log('Denied request:', request);
-    setSelectedRequest(null);
-  };
+  // Add new useEffect for listed bikes
+  useEffect(() => {
+    const fetchListedBikes = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/bikes/listed', {
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to fetch listed bikes');
+        const data = await response.json();
+        setListedBikes(data);
+      } catch (error) {
+        console.error('Error fetching listed bikes:', error);
+      }
+    };
+
+    fetchListedBikes();
+  }, []);
+
+  // Add new useEffect for active rentals
+  useEffect(() => {
+    const fetchActiveRentals = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/rentals/active', {
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to fetch active rentals');
+        const data = await response.json();
+        setActiveRentals(data);
+      } catch (error) {
+        console.error('Error fetching active rentals:', error);
+      }
+    };
+
+    fetchActiveRentals();
+  }, []);
 
   const handleOwnerClick = (owner: BikeOwner) => {
     setSelectedOwner(owner);
@@ -368,9 +191,59 @@ function StaffDashboard() {
     setSelectedRenter(renter);
   };
 
+  // Add these handlers before the return statement
+const handleAccept = async (request: BikeRequest) => {
+  try {
+    const response = await fetch(`http://localhost:5004/bikes/approve/${request.id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to approve bike');
+
+    // Refresh the pending requests list
+    const updatedRequests = bikeRequests.filter(req => req.id !== request.id);
+    setBikeRequests(updatedRequests);
+
+    // Refresh the listed bikes
+    const listedResponse = await fetch('http://localhost:5004/bikes/listed', {
+      credentials: 'include'
+    });
+    if (listedResponse.ok) {
+      const data = await listedResponse.json();
+      setListedBikes(data);
+    }
+  } catch (error) {
+    console.error('Error approving bike:', error);
+  }
+};
+
+const handleDeny = async (request: BikeRequest) => {
+  try {
+    const response = await fetch(`http://localhost:5004/bikes/reject/${request.id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to reject bike');
+
+    // Remove the rejected request from the list
+    const updatedRequests = bikeRequests.filter(req => req.id !== request.id);
+    setBikeRequests(updatedRequests);
+  } catch (error) {
+    console.error('Error rejecting bike:', error);
+  }
+};
+
   const filteredListedBikes = listedBikes.filter(bike =>
-    bike.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bike.manufacturer.toLowerCase().includes(searchTerm.toLowerCase())
+    (bike?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (bike?.manufacturer?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
   return (

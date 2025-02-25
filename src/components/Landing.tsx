@@ -1,11 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface LandingProps {
-  onRentalsClick: () => void;
-  onEarnClick: () => void;
-}
+function Landing() {
+  const navigate = useNavigate(); // ✅ Use `useNavigate` for navigation
 
-function Landing({ onRentalsClick, onEarnClick }: LandingProps) {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="flex flex-col md:flex-row items-center justify-between">
@@ -16,13 +14,13 @@ function Landing({ onRentalsClick, onEarnClick }: LandingProps) {
           </p>
           <div className="space-x-4">
             <button
-              onClick={onRentalsClick}
+              onClick={() => navigate("/home")} // ✅ Navigate to `/home`
               className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
             >
               VIEW OUR MOTORBIKES
             </button>
             <button
-              onClick={onEarnClick}
+              onClick={() => navigate("/earn")} // ✅ Navigate to "Earn With Us"
               className="bg-white text-black px-8 py-3 rounded-lg font-semibold border-2 border-black hover:bg-gray-100 transition-colors"
             >
               EARN WITH US

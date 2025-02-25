@@ -6,12 +6,25 @@ const Login = () => {
     const [password, setPassword] = useState("");
     
     const handleUserLogin = async (email: string, password: string) => {
-        const userData = await handleLogin(email, password);
-        if (userData) {
-            localStorage.setItem("token", userData.token);
-            window.location.href = "/dashboard"; // Redirect to dashboard
-        } else {
-            alert("Invalid email or password");
+        try {
+            const response = await fetch('http://localhost:5004/auth/login', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password })
+            });
+    
+            if (response.ok) {
+                const userData = await response.json();
+                window.location.href = "/home";
+            } else {
+                alert("Invalid email or password");
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert("Login failed. Please try again.");
         }
     };
 
