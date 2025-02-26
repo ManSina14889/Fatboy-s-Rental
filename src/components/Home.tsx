@@ -11,8 +11,6 @@ interface Motorbike {
   price_per_day: number;   // Changed from 'price'
   location: string;
   image: string;
-  rating: number;
-  reviews: number;
   owner: string;
   email: string;
   description: string;
@@ -189,14 +187,14 @@ function Home() {
               <div className="w-1/3">
                 <img
                   src={motorbike.image}
-                  alt={motorbike.name}
+                  alt={motorbike.model}
                   className="w-full h-32 md:h-72 object-cover"
                 />
               </div>
               <div className="w-2/3 p-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{motorbike.manufacturer} {motorbike.name}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">{motorbike.manufacturer} {motorbike.model}</h3>
                     <span className="inline-block px-2 py-1 mt-1 text-sm font-medium text-gray-600 bg-gray-100 rounded">
                       {motorbike.category}
                     </span>
@@ -208,11 +206,6 @@ function Home() {
                   <div className="flex items-center text-gray-600">
                     <MapPin className="w-4 h-4 mr-2" />
                     <span>{motorbike.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Star className="w-4 h-4 mr-2 text-yellow-400" />
-                    <span>{motorbike.rating} ({motorbike.reviews} reviews)</span>
                   </div>
 
                   <div className="flex items-center text-gray-600">
@@ -244,7 +237,7 @@ function Home() {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{selectedBike.manufacturer} {selectedBike.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedBike.manufacturer} {selectedBike.model}</h2>
                 <button
                   onClick={() => setSelectedBike(null)}
                   className="text-gray-500 hover:text-gray-700"
@@ -259,7 +252,7 @@ function Home() {
                   <div className="relative">
                     <img
                       src={selectedBike.image}
-                      alt={selectedBike.name}
+                      alt={selectedBike.model}
                       className="w-full h-[400px] object-cover rounded-lg"
                     />
                   </div>

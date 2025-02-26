@@ -5,7 +5,7 @@ import { CheckCircle, XCircle, Bike, User, Calendar, MapPin, Clock, DollarSign, 
 // Update Motorbike interface
 interface Motorbike {
   id: number;
-  name: string;
+  model: string;
   image: string;  // Keep only single image
   price: number;
   location: string;
@@ -220,8 +220,26 @@ function StaffDashboard() {
   };
 
   // Add these handlers before the return statement
+// Update handleAccept function
 const handleAccept = async (request: BikeRequest) => {
   try {
+    // Create FormData to handle the image
+    const formData = new FormData();
+    
+    // Get the image file from the URL
+    const imageResponse = await fetch(request.image);
+    const imageBlob = await imageResponse.blob();
+    formData.append('image', imageBlob, `bike_${request.id}.jpg`);
+    
+    // Add other bike data
+    formData.append('id', request.id.toString());
+    formData.append('manufacturer', request.manufacturer);
+    formData.append('name', request.name);
+    formData.append('category', request.category);
+    formData.append('engineCapacity', request.engineCapacity);
+    formData.append('location', request.location);
+    formData.append('price', request.price.toString());
+
     const response = await fetch(`http://localhost:5004/bikes/approve/${request.id}`, {
       method: 'PUT',
       credentials: 'include',
@@ -483,13 +501,13 @@ const handleDeny = async (request: BikeRequest) => {
                 <div className="flex items-start space-x-4">
                   <img
                     src={bike.image}
-                    alt={bike.name}
+                    alt={bike.model}
                     className="w-32 h-32 object-cover rounded-lg"
                   />
                   <div className="flex-grow">
                     <div className="flex justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold">{bike.manufacturer} {bike.name}</h3>
+                        <h3 className="text-lg font-semibold">{bike.manufacturer} {bike.model}</h3>
                         <span className="inline-block px-2 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded">
                           {bike.category}
                         </span>

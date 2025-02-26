@@ -55,10 +55,10 @@ router.post('/request', authenticateUser, upload.single('image'), async (req, re
         engine_capacity,
         price_per_day,
         location,
-        description
+        description,
+        image_url
     } = req.body;
 
-    const image_url = req.file ? `/uploads/bikes/${req.file.filename}` : null;
     const owner_id = req.session.userId;
 
     try {
@@ -71,7 +71,6 @@ router.post('/request', authenticateUser, upload.single('image'), async (req, re
             RETURNING *`,
             [manufacturer, model, category, engine_capacity, price, location, description, image_url, owner_id]
         );
-        
         console.log('Saved request:', result.rows[0]);
         res.json({ message: 'Bike request submitted for approval', request: result.rows[0] });
     } catch (error) {
