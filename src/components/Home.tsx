@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Star, MapPin, Calendar, Search, X, User, Gauge, DollarSign, Fuel, Weight, Power } from 'lucide-react';
+import { Star, MapPin, Calendar, Search, X, User} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Motorbike {
   id: number;
-  name: string;
-  image: string;
-  price: number;
+  manufacturer: string;
+  model: string;           // Changed from 'name'
+  category: 'Scooter' | 'Sport' | 'Naked' | 'Touring' | 'Adventure';
+  engine_capacity: string; // Added
+  price_per_day: number;   // Changed from 'price'
   location: string;
+  image: string;
   rating: number;
   reviews: number;
   owner: string;
-  category: 'Scooter' | 'Sport' | 'Naked' | 'Touring' | 'Adventure';
-  manufacturer: string;
-  engineCapacity: string;
-  power: string;
-  weight: string;
-  fuelCapacity: string;
-  additionalImages: string[];
+  email: string;
   description: string;
 }
 
 function Home() {
-  
+  // Add this near your other hooks
+  const navigate = useNavigate();
+
   const [motorbikes, setMotorbikes] = useState<Motorbike[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -103,10 +103,41 @@ function Home() {
     setShowCheckoutModal(true);
   };
 
-  const handleCheckout = () => {
-    alert(`Booking confirmed for ${selectedBike?.name} for ${rentalDays} days.`);
-    setShowCheckoutModal(false);
-    setSelectedBike(null);
+  const handleCheckout = async () => {
+    if (!selectedBike) return;
+    
+    try {
+      const rentalData = {
+        bike_id: selectedBike.id,
+        start_date: startDate,
+        end_date: endDate,
+        total_amount: calculateTotalCost()
+      };
+      
+      const response = await fetch('http://localhost:5004/rentals/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(rentalData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error || 'An error occurred during rental creation');
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Rental created:', data);
+      
+      setShowCheckoutModal(false);
+      navigate('/'); // Changed to navigate to landing page
+    } catch (error) {
+      console.error('Error creating rental:', error);
+      setError('Network error. Please check your connection.');
+    }
   };
 
   const calculateTotalCost = () => {
@@ -192,7 +223,7 @@ function Home() {
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">Listed by {motorbike.owner}</p>
+                    <p className="text-sm text-gray-600">Listed by - {motorbike.email}</p>
                     <button 
                       onClick={() => handleBookNow(motorbike)}
                       className="bg-black text-white py-2 px-6 rounded-md hover:bg-gray-800 transition-colors"
@@ -227,39 +258,10 @@ function Home() {
                 <div className="md:w-1/2">
                   <div className="relative">
                     <img
-                      src={selectedBike.additionalImages[currentImageIndex]}
-                      alt={`${selectedBike.name} view ${currentImageIndex + 1}`}
+                      src={selectedBike.image}
+                      alt={selectedBike.name}
                       className="w-full h-[400px] object-cover rounded-lg"
                     />
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
-                    >
-                      ←
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75"
-                    >
-                      →
-                    </button>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    {selectedBike.additionalImages.map((img, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`w-20 h-20 rounded-lg overflow-hidden ${
-                          currentImageIndex === index ? 'ring-2 ring-black' : ''
-                        }`}
-                      >
-                        <img
-                          src={img}
-                          alt={`${selectedBike.name} thumbnail ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
                   </div>
                 </div>
 
@@ -267,41 +269,7 @@ function Home() {
                 <div className="md:w-1/2 space-y-6">
                   <div className="flex items-center space-x-2 text-gray-600">
                     <User className="w-5 h-5" />
-                    <span>Listed by {selectedBike.owner}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-2">
-                      <Gauge className="w-5 h-5 text-gray-600" />
-                      <div>
-                        <p className="text-sm text-gray-600">Engine</p>
-                        <p className="font-medium">{selectedBike.engineCapacity}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Power className="w-5 h-5 text-gray-600" />
-                      <div>
-                        <p className="text-sm text-gray-600">Power</p>
-                        <p className="font-medium">{selectedBike.power}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Weight className="w-5 h-5 text-gray-600" />
-                      <div>
-                        <p className="text-sm text-gray-600">Weight</p>
-                        <p className="font-medium">{selectedBike.weight}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Fuel className="w-5 h-5 text-gray-600" />
-                      <div>
-                        <p className="text-sm text-gray-600">Fuel Capacity</p>
-                        <p className="font-medium">{selectedBike.fuelCapacity}</p>
-                      </div>
-                    </div>
+                    <span>Listed by - {selectedBike.email}</span>
                   </div>
 
                   <div>
@@ -377,8 +345,8 @@ function Home() {
                 <input
                   type="date"
                   value={endDate}
-                  readOnly // Make the end date read-only
-                  className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent bg-gray-100"
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               </div>
 

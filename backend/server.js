@@ -2,10 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
-const session = require('express-session'); // Add this line
+const session = require('express-session');
 const authRoutes = require('./routes/auth.js'); // Login and Sign-Up routes
-const bikeRoutes = require('./routes/bikes.js'); // Import bike routes
-const db = require('./db'); // Ensure database connection (if db.js exists)
+const bikeRoutes = require('./routes/bikes.js'); // Bike routes
+const rentalsRouter = require('./routes/rentals');
+const db = require('./db'); // Database connection
 
 dotenv.config({ path: './backend/.env' });
 
@@ -25,12 +26,12 @@ app.use(
   })
 );
 
-// Middleware
-app.use(express.json());
+// Middleware (Ensure this is before routes)
+app.use(express.json()); // Allows JSON request parsing
+app.use(express.urlencoded({ extended: true })); // Allows URL-encoded request parsing
 app.use(morgan('dev')); // Logs API requests
 
-// Add session middleware configuration
-// Session middleware should be before route handlers
+// Add session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -61,17 +62,24 @@ db.query('SELECT 1')
 // Debugging Middleware - Logs every request
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
+  if (req.method === "POST") {
+    console.log("Request body:", JSON.stringify(req.body, null, 2)); // Pretty-print for clarity
+  }
   next();
 });
 
 // Mount routes
-app.use('/auth', authRoutes);  // Remove /api prefix
-app.use('/bikes', bikeRoutes); // Remove /api prefix
+app.use('/auth', authRoutes); 
+app.use('/bikes', bikeRoutes);
+
+// Add this line with your other route handlers
+app.use('/rentals', rentalsRouter);
 
 // Update debug logs to match actual routes
 console.log("Registered routes:");
 console.log("/auth - Authentication routes");
 console.log("/bikes - Bike routes");
+console.log("/rentals - Rental routes"); // ✅ Added rentals route
 
 // 404 Handler - If no route matches
 app.use((req, res) => {

@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Bike, User, Calendar, MapPin, Clock, DollarSign, Phone, Mail, Shield, Star, Search } from 'lucide-react';
+import { CheckCircle, XCircle, Bike, User, Calendar, MapPin, Clock, DollarSign, Phone, Mail, Shield, Search } from 'lucide-react';
 
 // Import the Motorbike interface and motorbikes array from Home.tsx
+// Update Motorbike interface
 interface Motorbike {
   id: number;
   name: string;
-  image: string;
+  image: string;  // Keep only single image
   price: number;
   location: string;
-  rating: number;
-  reviews: number;
   owner: string;
   category: 'Scooter' | 'Sport' | 'Naked' | 'Touring' | 'Adventure';
   manufacturer: string;
   engineCapacity: string;
-  power: string;
-  weight: string;
-  fuelCapacity: string;
-  additionalImages: string[];
   description: string;
 }
 
@@ -95,21 +90,25 @@ interface RentalContract {
   };
 }
 
+// Update only the ActiveRental interface
 interface ActiveRental {
   id: string;
   bike: {
     id: number;
-    name: string;
     manufacturer: string;
+    model: string;
     image: string;
-    category: string;
-    engineCapacity: string;
-    location: string;
-    price: number;
   };
-  owner: BikeOwner;
-  renter: Renter;
-  contract: RentalContract;
+  renter: {
+    email: string;
+  };
+  contract: {
+    startDate: string;
+    endDate: string;
+    totalAmount: number;
+    status: string;
+    deposit: number;
+  };
 }
 
 
@@ -124,7 +123,30 @@ function StaffDashboard() {
   const [bikeRequests, setBikeRequests] = useState<BikeRequest[]>([]);
   // Add these new states
   const [listedBikes, setListedBikes] = useState<Motorbike[]>([]);
+  // Update the initial state to be an empty array
   const [activeRentals, setActiveRentals] = useState<ActiveRental[]>([]);
+  
+  // Update the fetch function to handle the response better
+  useEffect(() => {
+      const fetchActiveRentals = async () => {
+          try {
+              const response = await fetch('http://localhost:5004/rentals/active', {
+                  credentials: 'include'
+              });
+              if (!response.ok) {
+                  throw new Error('Failed to fetch active rentals');
+              }
+              const data = await response.json();
+              // Ensure data is an array
+              setActiveRentals(Array.isArray(data) ? data : []);
+          } catch (error) {
+              console.error('Error fetching active rentals:', error);
+              setActiveRentals([]); // Set empty array on error
+          }
+      };
+  
+      fetchActiveRentals();
+  }, []);
 
   // Keep your existing useEffect for pending requests
   useEffect(() => {
@@ -166,22 +188,28 @@ function StaffDashboard() {
   }, []);
 
   // Add new useEffect for active rentals
+  // Keep only this useEffect for active rentals
   useEffect(() => {
-    const fetchActiveRentals = async () => {
-      try {
-        const response = await fetch('http://localhost:5004/rentals/active', {
-          credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to fetch active rentals');
-        const data = await response.json();
-        setActiveRentals(data);
-      } catch (error) {
-        console.error('Error fetching active rentals:', error);
-      }
-    };
-
-    fetchActiveRentals();
+      const fetchActiveRentals = async () => {
+          try {
+              const response = await fetch('http://localhost:5004/rentals/active', {
+                  credentials: 'include'
+              });
+              if (!response.ok) {
+                  throw new Error('Failed to fetch active rentals');
+              }
+              const data = await response.json();
+              console.log('Active rentals data:', data); // Add debug log
+              setActiveRentals(Array.isArray(data) ? data : []);
+          } catch (error) {
+              console.error('Error fetching active rentals:', error);
+              setActiveRentals([]);
+          }
+      };
+  
+      fetchActiveRentals();
   }, []);
+
 
   const handleOwnerClick = (owner: BikeOwner) => {
     setSelectedOwner(owner);
@@ -221,14 +249,49 @@ const handleAccept = async (request: BikeRequest) => {
   }
 };
 
-const handleDeny = async (request: BikeRequest) => {
+const handleDeleteBike = async (bikeId: number) => {
+  if (!window.confirm('Are you sure you want to delete this bike?')) {
+    return;
+  }
+
   try {
-    const response = await fetch(`http://localhost:5004/bikes/reject/${request.id}`, {
-      method: 'PUT',
+    const response = await fetch(`http://localhost:5004/bikes/delete/${bikeId}`, {
+      method: 'DELETE',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete bike');
+    }
+
+    // Remove the bike from the listed bikes
+    setListedBikes(prevBikes => prevBikes.filter(bike => bike.id !== bikeId));
+    
+    // Remove the rental from active rentals if it exists
+    setActiveRentals(prevRentals => prevRentals.filter(rental => rental.bike.id !== bikeId));
+    
+    alert('Bike deleted successfully');
+  } catch (error) {
+    console.error('Error deleting bike:', error);
+    alert(error instanceof Error ? error.message : 'Failed to delete bike');
+  }
+};
+
+const handleDeny = async (request: BikeRequest) => {
+  try {
+    const response = await fetch(`http://localhost:5004/bikes/requests/${request.id}/status`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        status: 'REJECTED'
+      })
     });
 
     if (!response.ok) throw new Error('Failed to reject bike');
@@ -410,6 +473,7 @@ const handleDeny = async (request: BikeRequest) => {
             </div>
           </div>
 
+          
           <div className="space-y-6">
             {filteredListedBikes.map((bike) => (
               <div
@@ -430,7 +494,16 @@ const handleDeny = async (request: BikeRequest) => {
                           {bike.category}
                         </span>
                       </div>
-                      <p className="text-lg font-bold">${bike.price}/day</p>
+                      <div className="flex flex-col items-end">
+                        <p className="text-lg font-bold">${bike.price}/day</p>
+                        <button
+                          onClick={() => handleDeleteBike(bike.id)}
+                          className="flex items-center space-x-1 px-4 py-2 mt-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-2 space-y-1">
@@ -445,10 +518,6 @@ const handleDeny = async (request: BikeRequest) => {
                       <div className="flex items-center text-gray-600">
                         <MapPin className="w-4 h-4 mr-2" />
                         <span>{bike.location}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Star className="w-4 h-4 mr-2 text-yellow-400" />
-                        <span>{bike.rating} ({bike.reviews} reviews)</span>
                       </div>
                     </div>
                   </div>
@@ -481,41 +550,34 @@ const handleDeny = async (request: BikeRequest) => {
                 <div className="flex items-start space-x-4">
                   <img
                     src={rental.bike.image}
-                    alt={rental.bike.name}
+                    alt={`${rental.bike.manufacturer} ${rental.bike.model}`}
                     className="w-32 h-32 object-cover rounded-lg"
                   />
                   <div className="flex-grow">
                     <div className="flex justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold">{rental.bike.manufacturer} {rental.bike.name}</h3>
-                        <span className="inline-block px-2 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded">
-                          {rental.bike.category}
-                        </span>
+                        <h3 className="text-lg font-semibold">
+                          {rental.bike.manufacturer} {rental.bike.model}
+                        </h3>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold">${rental.bike.price}/day</p>
+                      <div className="text-right flex flex-col items-end">
                         <p className="text-sm text-gray-600">Total: ${rental.contract.totalAmount}</p>
+                        <button
+                          onClick={() => handleDeleteBike(rental.bike.id)}
+                          className="flex items-center space-x-1 px-4 py-2 mt-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Delete</span>
+                        </button>
                       </div>
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Owner</p>
-                        <button
-                          onClick={() => handleOwnerClick(rental.owner)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {rental.owner.name}
-                        </button>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Renter</p>
-                        <button
-                          onClick={() => handleRenterClick(rental.renter)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {rental.renter.name}
-                        </button>
+                        <p className="text-sm font-medium text-gray-600">Renter Email</p>
+                        <p className="text-blue-600">
+                          {rental.renter.email}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-600">Rental Period</p>
@@ -526,6 +588,9 @@ const handleDeny = async (request: BikeRequest) => {
                         <span className="inline-block px-2 py-1 text-sm font-medium text-green-600 bg-green-100 rounded">
                           {rental.contract.status}
                         </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-600"></p>
                       </div>
                     </div>
                   </div>

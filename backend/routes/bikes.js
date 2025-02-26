@@ -17,7 +17,34 @@ router.get('/test', (req, res) => {
 });
 
 // Submit bike request for approval
-router.post('/request', authenticateUser, async (req, res) => {
+const multer = require('multer');
+const path = require('path');
+
+// Configure multer for image upload
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/bikes/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not an image! Please upload an image.'), false);
+    }
+  }
+});
+
+// Update the bike request route to handle file upload
+router.post('/request', authenticateUser, upload.single('image'), async (req, res) => {
     console.log('Received bike request:', req.body);
     console.log('User ID:', req.session.userId);
     
@@ -28,10 +55,10 @@ router.post('/request', authenticateUser, async (req, res) => {
         engine_capacity,
         price_per_day,
         location,
-        description,
-        image_url
+        description
     } = req.body;
 
+    const image_url = req.file ? `/uploads/bikes/${req.file.filename}` : null;
     const owner_id = req.session.userId;
 
     try {
@@ -44,6 +71,7 @@ router.post('/request', authenticateUser, async (req, res) => {
             RETURNING *`,
             [manufacturer, model, category, engine_capacity, price, location, description, image_url, owner_id]
         );
+        
         console.log('Saved request:', result.rows[0]);
         res.json({ message: 'Bike request submitted for approval', request: result.rows[0] });
     } catch (error) {
@@ -191,25 +219,97 @@ router.get('/listed', async (req, res) => {
         
         const result = await pool.query(
             `SELECT 
-                id,
-                manufacturer,
-                model,
-                category,
-                engine_capacity as "engineCapacity",
-                price_per_day as price,
-                location,
-                description,
-                image_url as image,
-                owner_id
-            FROM listed_bikes
-            ORDER BY created_at DESC`
+                lb.id,
+                lb.manufacturer,
+                lb.model,
+                lb.category,
+                lb.engine_capacity as "engineCapacity",
+                lb.price_per_day as price,
+                lb.location,
+                lb.description,
+                lb.image_url as image,
+                lb.owner_id,
+                u.email as owner_email
+            FROM listed_bikes lb
+            JOIN users u ON lb.owner_id = u.id
+            ORDER BY lb.created_at DESC`
         );
 
-        res.json(result.rows);
+        // Transform the response to include email
+        const transformedBikes = result.rows.map(bike => ({
+            ...bike,
+            owner: bike.owner_email, // Add owner field with email
+            email: bike.owner_email, // Add email field
+            owner_email: undefined // Remove the duplicate field
+        }));
+
+        res.json(transformedBikes);
     } catch (error) {
         console.error('Error fetching listed bikes:', error);
         res.status(500).json({ error: error.message });
     }
+});
+
+// Add this route to handle bike request rejection
+router.put('/reject/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query(
+      `UPDATE bike_requests 
+      SET status = 'REJECTED', updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1 AND status = 'pending'
+      RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Request not found or already processed' });
+    }
+
+    res.json({ message: 'Bike request rejected successfully' });
+  } catch (error) {
+    console.error('Error rejecting bike request:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add this route to handle bike deletion
+router.delete('/delete/:id', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const bikeId = req.params.id;
+    
+    await pool.query('BEGIN');
+    
+    // Delete from active_rentals first
+    await pool.query('DELETE FROM active_rentals WHERE bike_id = $1', [bikeId]);
+    
+    // Then delete from rentals
+    await pool.query('DELETE FROM rentals WHERE bike_id = $1', [bikeId]);
+    
+    // Finally delete from listed_bikes
+    const deleteResult = await pool.query(
+      'DELETE FROM listed_bikes WHERE id = $1 RETURNING *',
+      [bikeId]
+    );
+
+    if (deleteResult.rows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ error: 'Bike not found' });
+    }
+    
+    await pool.query('COMMIT');
+    
+    res.json({ message: 'Bike deleted successfully' });
+  } catch (error) {
+    await pool.query('ROLLBACK');
+    console.error('Error deleting bike:', error);
+    res.status(500).json({ error: 'Failed to delete bike: ' + error.message });
+  }
 });
 
 module.exports = router;
